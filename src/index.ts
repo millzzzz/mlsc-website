@@ -19,7 +19,7 @@ const app = new Hono<{ Variables: Variables }>();
 // Apply middleware
 app.use('*', logger());
 app.use('*', errorHandler);
-app.use('/static/*', serveStatic({ root: './public' }));
+app.use('/static/*', serveStatic({ root: './' }));
 
 // Preview mode middleware
 const previewModeMiddleware = createMiddleware(async (c, next) => {
