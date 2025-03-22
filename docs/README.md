@@ -17,6 +17,9 @@ Developers: When adding new documentation, please update this index to ensure di
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Solutions for common development and deployment issues |
 | [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) | Record of development progress, decisions, and next steps |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Guidelines for contributors to the project |
+| [CMS_INTEGRATION.md](CMS_INTEGRATION.md) | Details on Payload CMS integration for content management |
+| [IMPLEMENTATION_REASONING.md](IMPLEMENTATION_REASONING.md) | Detailed reasoning behind architectural and implementation decisions |
+| [SUPABASE_SETUP.md](SUPABASE_SETUP.md) | Guide for setting up Supabase for the CMS and image storage |
 
 ## Development Quick Links
 
@@ -31,8 +34,11 @@ For new developers joining the project, we recommend reading the documents in th
 
 1. [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) - Latest project status and decisions
 2. [PROJECT.md](PROJECT.md) - Understand the overall project
-3. [ROADMAP.md](ROADMAP.md) - See where we're headed
-4. [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Prepare for common issues
+3. [IMPLEMENTATION_REASONING.md](IMPLEMENTATION_REASONING.md) - Understand the design decisions
+4. [ROADMAP.md](ROADMAP.md) - See where we're headed
+5. [CMS_INTEGRATION.md](CMS_INTEGRATION.md) - Content management workflow
+6. [SUPABASE_SETUP.md](SUPABASE_SETUP.md) - Database and storage setup
+7. [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Prepare for common issues
 
 ## Running the Project
 
@@ -64,6 +70,7 @@ When updating documentation:
 - [ ] Create component documentation
 - [ ] Add database schema documentation (when implemented)
 - [ ] Create API documentation (when implemented)
+- [ ] Complete CMS user guide for clients
 
 ---
 

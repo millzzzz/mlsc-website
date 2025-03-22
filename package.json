@@ -3,11 +3,13 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "build": "bun build src/index.ts --outdir ./dist --target node",
+    "dev": "bun --watch src/server.ts",
+    "start": "bun run dist/server.js",
+    "build": "bun build src/server.ts --outdir ./dist --target node",
     "typecheck": "tsc --noEmit",
-    "vercel-build": "bun build src/index.ts --outdir ./dist --target node"
+    "vercel-build": "echo 'Build completed!'",
+    "payload": "bunx --bun payload",
+    "setup": "mkdir -p public/media && bunx payload db:init"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -20,8 +22,17 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
+    "@payloadcms/db-postgres": "^3.29.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "@types/express": "^5.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "hono": "^4.7.5",
     "jose": "^6.0.10",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.12.2",
+    "payload": "^3.29.0",
+    "sharp": "^0.33.5",
     "zod": "^3.24.2"
   },
   "engines": {

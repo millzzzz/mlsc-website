@@ -2,10 +2,128 @@
 - `bun pm cache rm` - clear bun cache
 - `lsof -i :3000` - see what's running on port 3000
 - `kill -9 <PID>` - kill that process
+- `pkill -f "payload generate:types"`
 
 # MLSC Studio Website
 
-A simple, elegant website for MLSC Studio built with Bun and Hono.js featuring a dual-view architecture for team and public visitors.
+A modern, TypeScript-powered website featuring a Payload CMS integration for managing content like the Editorial section with a gallery layout inspired by olaoluslawn.com/works.
+
+## Technologies
+
+- **Bun** - JavaScript runtime with bundling, TypeScript support, and package management
+- **TypeScript** - Type-safe JavaScript
+- **Hono.js** - Lightweight web framework
+- **Payload CMS** - Headless CMS integrated with TypeScript
+- **Supabase** - PostgreSQL database and storage
+
+## Setup Instructions
+
+### Prerequisites
+
+- Bun installed: [bun.sh](https://bun.sh/)
+- Supabase account: [supabase.com](https://supabase.com/)
+
+### Environment Variables
+
+Create a `.env` file in the root of the project with the following variables:
+
+```
+# Server configuration
+PORT=3000
+NODE_ENV=development
+
+# Preview mode settings
+PREVIEW_SECRET=your-preview-secret-here
+
+# Authentication
+JWT_SECRET=your-jwt-secret-here
+
+# Payload CMS
+PAYLOAD_SECRET=your-payload-secret-key-here
+PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
+
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLIC_KEY=your-supabase-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_DATABASE_URL=postgresql://postgres:your-actual-password@db.your-project.supabase.co:5432/postgres
+
+# Frontend Configuration
+FRONTEND_URL=http://localhost:3000
+```
+
+### Supabase Setup
+
+1. Create a new Supabase project
+2. Create a storage bucket named `media`
+3. Get your API keys from Project Settings > API
+4. Find your database URL in Project Settings > Database > Connection string (URI format)
+5. Replace placeholders in `.env` with your actual values
+
+### Install Dependencies
+
+```bash
+bun install
+```
+
+### Initialize the Database
+
+Run the setup script to create Payload CMS tables in your Supabase database:
+
+```bash
+bun run setup
+```
+
+### Start the Development Server
+
+```bash
+bun run dev
+```
+
+### Access the CMS
+
+1. Open `http://localhost:3000/admin` in your browser
+2. Create an admin user on first login
+3. Start adding content in the Editorial collection
+
+## Project Structure
+
+- `src/` - TypeScript source code
+  - `index.ts` - Main entry point with Hono and Payload integration
+  - `cms/` - Payload CMS configurations
+    - `collections/` - CMS collection definitions
+    - `payload.config.ts` - Payload CMS configuration
+  - `routes/` - Hono route handlers
+    - `public.ts` - Public-facing routes
+    - `api.ts` - API endpoints for fetching CMS data
+- `scripts/` - Utility scripts
+  - `setup-payload.ts` - Database initialization script
+- `static/` - Static assets
+- `uploads/` - Temporary directory for file uploads
+
+## Adding Content
+
+1. Log in to the CMS at `/admin`
+2. Navigate to the Editorial collection
+3. Create new content with:
+   - Title, author, category, and description
+   - Set "Display Type" to "Gallery" for image-focused content
+   - Upload images with various aspect ratios
+   - Set priority numbers to control order
+   - Publish when ready
+
+## Features
+
+- TypeScript-powered end-to-end
+- Headless CMS with PostgreSQL database
+- Responsive masonry grid layout
+- Category filtering
+- Supabase Storage integration
+- Preview mode for content drafts
+
+## License
+
+MIT
 
 ## 🎯 Key Features
 
@@ -100,3 +218,67 @@ P.S. I think how Sim's views is it like his representation of his art identity.
 
 
 06:12 PM 01/24/2025 
+
+## Deployment to Vercel
+
+This project is configured for deployment to Vercel.
+
+### Deployment Steps
+
+1. Create a Vercel account if you don't have one already.
+2. Install the Vercel CLI: `npm install -g vercel`
+3. Run `vercel login` to authenticate with your Vercel account.
+4. Configure your Supabase project (see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)).
+5. Set up the following environment variables in Vercel:
+
+```
+PREVIEW_SECRET=your-preview-secret-here
+JWT_SECRET=your-jwt-secret-here
+PAYLOAD_SECRET=your-payload-secret-key-here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLIC_KEY=your-supabase-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_DATABASE_URL=postgresql://postgres:password@your-project.supabase.co:5432/postgres
+```
+
+6. Deploy with: `vercel --prod`
+
+## Development
+
+### Running Locally
+
+1. Install dependencies: `bun install`
+2. Start the development server: `bun dev`
+3. Access the site at `http://localhost:3000`
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure the variables:
+
+```
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Preview Mode
+PREVIEW_SECRET=your-preview-secret-here
+
+# Authentication
+JWT_SECRET=your-jwt-secret-here
+
+# Payload CMS
+PAYLOAD_SECRET=your-payload-secret-key-here
+
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLIC_KEY=your-supabase-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_DATABASE_URL=postgresql://postgres:password@your-project.supabase.co:5432/postgres
+
+# Frontend Configuration
+FRONTEND_URL=http://localhost:3000
+```
+
+### Accessing the CMS
+
+The Payload CMS admin panel is available at `/admin`. 

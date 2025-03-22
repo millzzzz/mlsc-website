@@ -7,7 +7,6 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { publicRoutes } from './src/routes/public.js';
 import { previewRoutes } from './src/routes/preview.js';
-import { apiRoutes } from './src/routes/api.js';
 import payload from 'payload';
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { createClient } from '@supabase/supabase-js';
@@ -160,9 +159,6 @@ app.get('/media/*', async (c) => {
 
 // Public routes
 app.route('/', publicRoutes);
-
-// API routes
-app.route('/api', apiRoutes);
 
 // Preview mode routes (for development/preview)
 app.use('*', async (c, next) => {

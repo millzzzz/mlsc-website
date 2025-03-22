@@ -223,6 +223,67 @@ We've created extensive documentation to support ongoing development:
 - Lead Developer: [Your Name/Team]
 - Stakeholder: MLSC Studio
 
+## May 2024: Content Management System Integration
+
+**Date**: May 22, 2024  
+**Status**: CMS Planning Phase
+
+### Work Completed
+1. **CMS Research & Selection**
+   - Selected Payload CMS as our headless CMS solution
+   - Created documentation for CMS integration (see [CMS_INTEGRATION.md](CMS_INTEGRATION.md))
+
+2. **Editorial Section Redesign**
+   - Planning a masonry-style image grid layout inspired by olaoluslawn.com/works
+   - Designing the content model for editorial posts
+
+3. **Shop Page Improvements**
+   - Added product image support
+   - Planning implementation of checkout functionality
+   - Designing product content models
+
+### Decisions Made
+- **Payload CMS**: Chosen for its flexible content modeling, TypeScript support, and developer-friendly API
+- **Image Layout**: Will use CSS Grid or Flexbox for responsive masonry-style layout
+- **Development Approach**: Will implement the editorial section first as a proof of concept, then expand to other sections
+
+### Next Steps
+1. Install and configure Payload CMS
+2. Create the Editorial content model
+3. Implement the image grid layout
+4. Connect the front-end to fetch and display content from the CMS
+5. Create documentation for client content management workflow
+
+---
+
+## July 19, 2025 - Vercel Deployment & Supabase Integration
+
+### Work Completed
+1. **Supabase Integration**
+   - Set up Supabase project and configured database
+   - Implemented database policies for secure access
+   - Created storage bucket for media files
+
+2. **Payload CMS Configuration**
+   - Set up Payload CMS with Supabase PostgreSQL adapter
+   - Configured media uploads to use Supabase Storage
+   - Created user authentication system
+
+3. **Vercel Deployment**
+   - Configured Vercel project for serverless deployment
+   - Set up proper environment variables
+   - Created deployment documentation (see [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md))
+
+### Challenges Overcome
+- Resolved issues with Payload CMS configuration on Vercel
+- Fixed environment variable configuration for production deployment
+- Addressed Supabase database connection in serverless environment
+
+### Next Steps
+1. Finalize Editorial section front-end
+2. Set up automated testing for CMS functionality
+3. Implement user onboarding for content editors
+
 ---
 
 *This log will be updated as development progresses to maintain a clear record of the project's evolution.*

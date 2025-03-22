@@ -173,3 +173,52 @@ dist
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.cache/
+.output/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/
+media/
+
+# Large files
+*.pdf
+*.psd
+*.ai
+*.zip
+*.tar.gz
+
+# Bun
+bun.lockb

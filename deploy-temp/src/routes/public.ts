@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { PreviewBanner } from '../components/PreviewBanner';
-import { getEditorialPosts, getEditorialPostBySlug, getEditorialPostsByCategory } from '../cms/api';
 
 // Define types for variables
 type Variables = {
@@ -677,12 +676,8 @@ publicRoutes.get('/paintings', (c) => {
 });
 
 // Editorial page
-publicRoutes.get('/editorial', async (c) => {
+publicRoutes.get('/editorial', (c) => {
   const isPreviewMode = c.get('isPreviewMode') || false;
-  
-  // Fetch editorial posts from the CMS
-  const posts = await getEditorialPosts();
-  
   return c.html(html`
     <!DOCTYPE html>
     <html lang="en">
@@ -690,6 +685,7 @@ publicRoutes.get('/editorial', async (c) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Editorial - MLSC Studio</title>
+        <script src="/static/js/editorial.js" defer></script>
         <style>
           /* Base styles */
           body {
@@ -718,6 +714,22 @@ publicRoutes.get('/editorial', async (c) => {
           h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
+          }
+          .article {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+          }
+          .article:last-child {
+            border-bottom: none;
+          }
+          .article h3 {
+            margin-bottom: 5px;
+          }
+          .article .meta {
+            color: #777;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
           }
           
           /* Navigation styling */
@@ -753,45 +765,34 @@ publicRoutes.get('/editorial', async (c) => {
             opacity: 0.9;
           }
           
-          .editorial-content {
-            max-width: 100%;
-            margin: 0 auto;
-          }
-          
+          /* Masonry Grid Styles - inspired by olaoluslawn.com/works */
           .categories {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            gap: 15px;
             margin-bottom: 30px;
-            gap: 10px;
+            flex-wrap: wrap;
           }
           
           .category-button {
-            background: none;
-            border: 1px solid #ddd;
             padding: 8px 16px;
-            border-radius: 30px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            font-size: 14px;
+            transition: all 0.2s ease;
           }
           
-          .category-button:hover {
-            background-color: #f5f5f5;
-          }
-          
-          .category-button.active {
-            background-color: #333;
+          .category-button:hover, .category-button.active {
+            background: #333;
             color: white;
-            border-color: #333;
           }
           
-          /* Masonry Grid */
           .masonry-grid {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
-            grid-gap: 15px;
-            margin-bottom: 60px;
+            gap: 20px;
+            margin-top: 40px;
           }
           
           @media (min-width: 640px) {
@@ -807,28 +808,50 @@ publicRoutes.get('/editorial', async (c) => {
           }
           
           .grid-item {
-            position: relative;
-            margin-bottom: 15px;
             break-inside: avoid;
-            background-color: #fff;
+            margin-bottom: 20px;
+            position: relative;
             overflow: hidden;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
           }
           
-          .grid-item a {
-            display: block;
-            text-decoration: none;
-            color: inherit;
+          .grid-item:hover {
+            transform: translateY(-5px);
+          }
+          
+          .grid-item.square {
+            aspect-ratio: 1/1;
+          }
+          
+          .grid-item.portrait {
+            aspect-ratio: 3/4;
+          }
+          
+          .grid-item.landscape {
+            aspect-ratio: 4/3;
+          }
+          
+          .grid-item.wide {
+            aspect-ratio: 16/9;
+            grid-column: span 1;
+          }
+          
+          @media (min-width: 640px) {
+            .grid-item.wide {
+              grid-column: span 2;
+            }
           }
           
           .grid-item img {
             width: 100%;
-            height: auto;
-            display: block;
+            height: 100%;
+            object-fit: cover;
             transition: transform 0.5s ease;
           }
           
           .grid-item:hover img {
-            transform: scale(1.03);
+            transform: scale(1.05);
           }
           
           .grid-item-overlay {
@@ -836,126 +859,122 @@ publicRoutes.get('/editorial', async (c) => {
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
             padding: 15px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
           }
           
           .grid-item:hover .grid-item-overlay {
-            transform: translateY(0);
+            opacity: 1;
           }
           
           .grid-item-overlay h3 {
-            margin: 0 0 5px;
-            font-size: 1.1rem;
+            margin: 0 0 5px 0;
+            font-size: 18px;
           }
           
           .grid-item-overlay p {
             margin: 0;
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 14px;
+            opacity: 0.8;
           }
           
-          /* Items with different aspect ratios */
-          .grid-item.portrait {
-            grid-row: span 2;
+          .grid-item a {
+            display: block;
+            height: 100%;
+            color: inherit;
+            text-decoration: none;
           }
           
-          .grid-item.landscape {
-            grid-column: span 1;
-          }
-          
-          .grid-item.square {
-            aspect-ratio: 1/1;
-          }
-          
-          .grid-item.wide {
-            grid-column: span 2;
-          }
-          
-          .grid-item.full-width {
-            grid-column: 1 / -1;
-          }
-          
-          /* Articles preview section */
+          /* Article Preview Section */
           .articles-preview {
             margin-top: 60px;
           }
           
-          .articles-preview h2 {
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            text-align: center;
-          }
-          
           .article-card {
             display: flex;
-            flex-direction: column;
             margin-bottom: 30px;
-            border: 1px solid #eee;
-            border-radius: 5px;
+            border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
           }
           
-          @media (min-width: 768px) {
-            .article-card {
-              flex-direction: row;
-            }
+          .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
           }
           
           .article-image {
-            flex: 0 0 200px;
-            overflow: hidden;
+            width: 30%;
+            min-height: 200px;
           }
           
           .article-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
-          }
-          
-          .article-card:hover .article-image img {
-            transform: scale(1.05);
           }
           
           .article-content {
-            flex: 1;
+            width: 70%;
             padding: 20px;
+            background: white;
           }
           
           .article-content h3 {
-            margin: 0 0 10px;
-            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 10px;
           }
           
           .article-meta {
             display: flex;
-            gap: 15px;
-            color: #666;
-            font-size: 0.9rem;
+            color: #777;
+            font-size: 14px;
             margin-bottom: 15px;
-            flex-wrap: wrap;
+          }
+          
+          .article-meta span {
+            margin-right: 15px;
           }
           
           .article-summary {
             margin-bottom: 15px;
-            line-height: 1.5;
+            line-height: 1.6;
           }
           
           .read-more {
             display: inline-block;
-            color: #222;
-            font-weight: bold;
+            padding: 8px 16px;
+            background: #333;
+            color: white;
             text-decoration: none;
-            border-bottom: 2px solid #222;
-            transition: all 0.2s;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background 0.3s ease;
           }
           
           .read-more:hover {
-            color: #555;
-            border-color: #555;
+            background: #555;
+          }
+          
+          /* Loading state */
+          .loading {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 18px;
+            color: #777;
+          }
+          
+          /* Error state */
+          .error {
+            text-align: center;
+            padding: 50px 20px;
+            color: #e74c3c;
+            background: #fdf0f0;
+            border-radius: 4px;
           }
         </style>
       </head>
@@ -975,7 +994,9 @@ publicRoutes.get('/editorial', async (c) => {
           </nav>
         </header>
         
-        <div class="editorial-content">
+        <div class="content-section">
+          <h2>Art Essays & Visual Stories</h2>
+          <p>Explore our collection of essays, visual stories, and insights on art, design, and creative processes.</p>
           
           <div class="categories">
             <button class="category-button active" data-category="all">All</button>
@@ -986,65 +1007,123 @@ publicRoutes.get('/editorial', async (c) => {
           </div>
           
           <div id="editorial-grid" class="masonry-grid">
-            ${posts.map(post => {
-              // Get the first gallery image or use featured image as fallback
-              const displayImage = post.galleryImages && post.galleryImages.length > 0 
-                ? post.galleryImages[0].image 
-                : post.featuredImage;
-              
-              const aspectRatio = post.galleryImages && post.galleryImages.length > 0 
-                ? post.galleryImages[0].aspectRatio 
-                : 'square';
-              
-              const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-              
-              return html`
-                <div class="grid-item ${aspectRatio}">
-                  <a href="/editorial/${post.slug}">
-                    <img src="${displayImage.url}" alt="${displayImage.alt}" loading="lazy" />
-                    <div class="grid-item-overlay">
-                      <h3>${post.title}</h3>
-                      <p>${post.category} · ${formattedDate}</p>
-                    </div>
-                  </a>
+            <!-- Grid items will be loaded from the API -->
+            <div class="grid-item portrait">
+              <a href="/editorial/the-intersection-of-music-and-visual-art">
+                <img src="/static/mlsc-icon.svg" alt="The Intersection of Music and Visual Art" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>The Intersection of Music and Visual Art</h3>
+                  <p>Music & Visual Art · June 15, 2023</p>
                 </div>
-              `;
-            }).join('')}
+              </a>
+            </div>
+            
+            <div class="grid-item landscape">
+              <a href="/editorial/urban-transit-as-artistic-inspiration">
+                <img src="/static/mlsc-icon.svg" alt="Urban Transit as Artistic Inspiration" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Urban Transit as Artistic Inspiration</h3>
+                  <p>Urban Transit · May 3, 2023</p>
+                </div>
+              </a>
+            </div>
+            
+            <div class="grid-item square">
+              <a href="/editorial/sketchbooks-the-artists-laboratory">
+                <img src="/static/mlsc-icon.svg" alt="Sketchbooks: The Artist's Laboratory" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Sketchbooks: The Artist's Laboratory</h3>
+                  <p>Sketchbooks · April 17, 2023</p>
+                </div>
+              </a>
+            </div>
+            
+            <div class="grid-item wide">
+              <a href="/editorial/typography-in-modern-design">
+                <img src="/static/mlsc-icon.svg" alt="Typography in Modern Design" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Typography in Modern Design</h3>
+                  <p>Design Principles · March 28, 2023</p>
+                </div>
+              </a>
+            </div>
+            
+            <div class="grid-item portrait">
+              <a href="/editorial/color-theory-in-urban-spaces">
+                <img src="/static/mlsc-icon.svg" alt="Color Theory in Urban Spaces" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Color Theory in Urban Spaces</h3>
+                  <p>Urban Transit · March 12, 2023</p>
+                </div>
+              </a>
+            </div>
+            
+            <div class="grid-item square">
+              <a href="/editorial/vinyl-records-design-influence">
+                <img src="/static/mlsc-icon.svg" alt="The Influence of Vinyl Records on Design" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>The Influence of Vinyl Records on Design</h3>
+                  <p>Music & Visual Art · February 24, 2023</p>
+                </div>
+              </a>
+            </div>
           </div>
           
           <div class="articles-preview">
             <h2>Latest Essays</h2>
-            ${posts.filter(post => post.displayType === 'article').slice(0, 3).map(post => {
-              const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-              
-              return html`
-                <div class="article-card">
-                  <div class="article-image">
-                    <img src="${post.featuredImage.url}" alt="${post.featuredImage.alt}" />
-                  </div>
-                  <div class="article-content">
-                    <h3>${post.title}</h3>
-                    <div class="article-meta">
-                      <span>${formattedDate}</span>
-                      <span>${post.author}</span>
-                      <span>${post.category}</span>
-                    </div>
-                    <div class="article-summary">
-                      ${post.summary}
-                    </div>
-                    <a href="/editorial/${post.slug}" class="read-more">Read more</a>
-                  </div>
+            <div class="article-card">
+              <div class="article-image">
+                <img src="/static/mlsc-icon.svg" alt="The Intersection of Music and Visual Art" />
+              </div>
+              <div class="article-content">
+                <h3>The Intersection of Music and Visual Art</h3>
+                <div class="article-meta">
+                  <span>June 15, 2023</span>
+                  <span>MLSC Studio</span>
+                  <span>Music & Visual Art</span>
                 </div>
-              `;
-            }).join('')}
+                <div class="article-summary">
+                  This essay explores the relationship between music—particularly vinyl records—and the visual arts. How does sound influence visual creativity?
+                </div>
+                <a href="/editorial/the-intersection-of-music-and-visual-art" class="read-more">Read more</a>
+              </div>
+            </div>
+            
+            <div class="article-card">
+              <div class="article-image">
+                <img src="/static/mlsc-icon.svg" alt="Urban Transit as Artistic Inspiration" />
+              </div>
+              <div class="article-content">
+                <h3>Urban Transit as Artistic Inspiration</h3>
+                <div class="article-meta">
+                  <span>May 3, 2023</span>
+                  <span>MLSC Studio</span>
+                  <span>Urban Transit</span>
+                </div>
+                <div class="article-summary">
+                  The patterns, maps, and rhythms of city transit systems have inspired countless artists. This piece examines why transit is such a powerful creative muse.
+                </div>
+                <a href="/editorial/urban-transit-as-artistic-inspiration" class="read-more">Read more</a>
+              </div>
+            </div>
+            
+            <div class="article-card">
+              <div class="article-image">
+                <img src="/static/mlsc-icon.svg" alt="Sketchbooks: The Artist's Laboratory" />
+              </div>
+              <div class="article-content">
+                <h3>Sketchbooks: The Artist's Laboratory</h3>
+                <div class="article-meta">
+                  <span>April 17, 2023</span>
+                  <span>MLSC Studio</span>
+                  <span>Sketchbooks</span>
+                </div>
+                <div class="article-summary">
+                  A look at how sketchbooks function as experimental spaces for artists to develop ideas before bringing them to larger work.
+                </div>
+                <a href="/editorial/sketchbooks-the-artists-laboratory" class="read-more">Read more</a>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -1081,6 +1160,10 @@ publicRoutes.get('/editorial', async (c) => {
                 }
               });
             });
+            
+            // Future API integration will go here
+            // This will fetch editorial content from the CMS
+            // and dynamically populate the grid and article cards
           });
         </script>
         
@@ -1093,59 +1176,9 @@ publicRoutes.get('/editorial', async (c) => {
 });
 
 // Editorial single post page
-publicRoutes.get('/editorial/:slug', async (c) => {
+publicRoutes.get('/editorial/:slug', (c) => {
   const isPreviewMode = c.get('isPreviewMode') || false;
   const slug = c.req.param('slug');
-  
-  // Fetch the post data from the CMS
-  const post = await getEditorialPostBySlug(slug);
-  
-  // If post not found, return 404
-  if (!post) {
-    return c.html(html`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Not Found - MLSC Studio</title>
-          <style>
-            body {
-              font-family: 'Helvetica Neue', Arial, sans-serif;
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 40px 20px;
-              text-align: center;
-            }
-            h1 {
-              font-size: 2rem;
-            }
-            a {
-              color: #333;
-              text-decoration: none;
-              border-bottom: 1px solid #333;
-              padding-bottom: 2px;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Editorial Post Not Found</h1>
-          <p>Sorry, we couldn't find the editorial post you're looking for.</p>
-          <p><a href="/editorial">Return to Editorial</a></p>
-        </body>
-      </html>
-    `, 404);
-  }
-  
-  // Format the date
-  const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  // Sort gallery images by priority if they exist
-  const galleryImages = post.galleryImages ? 
-    [...post.galleryImages].sort((a, b) => a.priority - b.priority) : 
-    [];
   
   return c.html(html`
     <!DOCTYPE html>
@@ -1153,14 +1186,14 @@ publicRoutes.get('/editorial/:slug', async (c) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${post.title} - MLSC Studio</title>
+        <title>Editorial Post - MLSC Studio</title>
         <style>
           /* Base styles */
           body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
           }
@@ -1179,23 +1212,15 @@ publicRoutes.get('/editorial/:slug', async (c) => {
           }
           
           .back-link {
-            display: inline-flex;
-            align-items: center;
+            display: inline-block;
             margin-bottom: 20px;
             color: #555;
             text-decoration: none;
             font-size: 14px;
-            transition: color 0.2s ease;
           }
           
           .back-link:hover {
-            color: #000;
-          }
-          
-          .back-link svg {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
+            text-decoration: underline;
           }
           
           .article-header {
@@ -1225,182 +1250,159 @@ publicRoutes.get('/editorial/:slug', async (c) => {
           .article-featured-image img {
             width: 100%;
             height: auto;
-            display: block;
+            border-radius: 8px;
           }
           
-          /* Gallery grid styling */
-          .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            grid-gap: 20px;
-            margin: 40px 0;
-          }
-          
-          @media (min-width: 640px) {
-            .gallery-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-          
-          @media (min-width: 1024px) {
-            .gallery-grid {
-              grid-template-columns: repeat(3, 1fr);
-            }
-          }
-          
-          .gallery-item {
-            break-inside: avoid;
-            position: relative;
-          }
-          
-          .gallery-item img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.3s ease;
-          }
-          
-          .gallery-item:hover img {
-            transform: scale(1.02);
-          }
-          
-          .gallery-item.portrait {
-            grid-row: span 2;
-          }
-          
-          .gallery-item.landscape {
-            grid-column: span 1;
-          }
-          
-          .gallery-item.square {
-            aspect-ratio: 1/1;
-          }
-          
-          .gallery-item.wide {
-            grid-column: span 2;
-          }
-          
-          .gallery-item.full-width {
-            grid-column: 1 / -1;
-          }
-          
-          .caption {
-            margin-top: 8px;
-            font-size: 0.85rem;
-            color: #555;
-            font-style: italic;
-          }
-          
-          /* Article content styling */
           .article-content {
-            max-width: 800px;
-            margin: 0 auto;
             font-size: 1.1rem;
             line-height: 1.7;
           }
           
           .article-content p {
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
           }
           
           .article-content h2 {
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
+            margin-top: 40px;
+            margin-bottom: 20px;
           }
           
-          .article-content h3 {
-            margin-top: 2rem;
-            margin-bottom: 0.8rem;
-            font-size: 1.5rem;
-          }
-          
-          .article-content a {
-            color: #333;
-            text-decoration: underline;
-            text-decoration-thickness: 1px;
-            text-underline-offset: 2px;
-          }
-          
-          .article-content a:hover {
-            text-decoration-thickness: 2px;
-          }
-          
-          .article-content ul, .article-content ol {
-            margin-bottom: 1.5rem;
-            padding-left: 1.5rem;
-          }
-          
-          .article-content li {
-            margin-bottom: 0.5rem;
+          .article-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 30px 0;
+            border-radius: 4px;
           }
           
           .article-content blockquote {
-            margin: 2rem 0;
-            padding: 1rem 1.5rem;
-            border-left: 4px solid #333;
-            background-color: #f8f8f8;
+            border-left: 4px solid #ddd;
+            padding-left: 20px;
+            margin: 30px 0;
             font-style: italic;
+            color: #555;
           }
           
-          .article-content blockquote p:last-child {
-            margin-bottom: 0;
+          .article-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+          }
+          
+          @media (min-width: 640px) {
+            .article-gallery {
+              grid-template-columns: repeat(3, 1fr);
+            }
+          }
+          
+          .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+          }
+          
+          .gallery-item img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+          }
+          
+          .gallery-item:hover img {
+            transform: scale(1.05);
+          }
+          
+          /* Navigation */
+          nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+          }
+          
+          nav a {
+            text-decoration: none;
+            color: #555;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+          }
+          
+          nav a:hover {
+            color: #000;
           }
           
           footer {
             margin-top: 60px;
             padding-top: 20px;
             border-top: 1px solid #eee;
-            text-align: center;
-            font-size: 0.9rem;
             color: #777;
+            font-size: 0.9rem;
           }
         </style>
       </head>
       <body>
         ${isPreviewMode ? PreviewBanner() : ''}
         <header>
-          <a href="/editorial" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Back to Editorial
-          </a>
-          
+          <a href="/editorial" class="back-link">← Back to Editorial</a>
+          <nav>
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li><a href="/sketchbooks">Sketchbooks</a></li>
+              <li><a href="/paintings">Paintings</a></li>
+              <li><a href="/editorial">Editorial</a></li>
+              <li><a href="/shop">Shop</a></li>
+              <li><a href="/pdf">PDF</a></li>
+            </ul>
+          </nav>
+        </header>
+        
+        <article>
           <div class="article-header">
-            <h1>${post.title}</h1>
+            <h1>The Intersection of Music and Visual Art</h1>
             <div class="article-meta">
-              <span>${formattedDate}</span>
-              <span>${post.author}</span>
-              <span>${post.category}</span>
+              <span>Published: June 15, 2023</span>
+              <span>Author: MLSC Studio</span>
+              <span>Category: Music & Visual Art</span>
             </div>
           </div>
           
           <div class="article-featured-image">
-            <img src="${post.featuredImage.url}" alt="${post.featuredImage.alt}" />
-            ${post.featuredImage.caption ? html`<div class="caption">${post.featuredImage.caption}</div>` : ''}
+            <img src="/static/mlsc-icon.svg" alt="The Intersection of Music and Visual Art" />
           </div>
-        </header>
-        
-        <!-- Gallery grid for images -->
-        ${galleryImages.length > 0 ? html`
-          <div class="gallery-grid">
-            ${galleryImages.map(item => html`
-              <div class="gallery-item ${item.aspectRatio}">
-                <img src="${item.image.url}" alt="${item.image.alt}" loading="lazy" />
-                ${item.caption ? html`<div class="caption">${item.caption}</div>` : ''}
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-        
-        <!-- Article content for 'article' type posts -->
-        ${post.displayType === 'article' && post.content ? html`
+          
           <div class="article-content">
-            <!-- This would typically use a rich text renderer -->
-            ${typeof post.content === 'string' ? post.content : JSON.stringify(post.content)}
+            <p>This essay explores the relationship between music—particularly vinyl records—and the visual arts. How does sound influence visual creativity?</p>
+            
+            <p>The connection between music and visual art has been a subject of fascination for artists and scholars alike. Throughout history, these two creative expressions have informed and inspired one another, creating a rich tapestry of cross-disciplinary influence.</p>
+            
+            <h2>Rhythm and Composition</h2>
+            
+            <p>Just as musical compositions rely on rhythm, tempo, and harmony, visual artwork employs similar principles through spatial relationships, color harmony, and visual rhythm. The structured patterns found in both mediums create an invisible bridge between what we hear and what we see.</p>
+            
+            <div class="article-gallery">
+              <div class="gallery-item">
+                <img src="/static/mlsc-icon.svg" alt="Gallery image 1" />
+              </div>
+              <div class="gallery-item">
+                <img src="/static/mlsc-icon.svg" alt="Gallery image 2" />
+              </div>
+              <div class="gallery-item">
+                <img src="/static/mlsc-icon.svg" alt="Gallery image 3" />
+              </div>
+            </div>
+            
+            <h2>Album Art as a Canvas</h2>
+            
+            <p>The vinyl record introduced a new canvas for visual artists—the album cover. This 12×12 inch square became an iconic format that has produced some of the most recognizable imagery in popular culture. From the psychedelic swirls of 1960s rock albums to the minimalist designs of electronic music, album covers have both reflected and defined visual trends.</p>
+            
+            <blockquote>
+              "The album cover is where music becomes tangible, where sound takes physical form." — Artist statement, MLSC Studio
+            </blockquote>
+            
+            <p>As we continue to explore this fertile intersection, new technologies open up possibilities for even more immersive experiences that blend sound and vision. Interactive installations, music visualization software, and virtual reality create environments where these two sensory experiences become inseparable.</p>
           </div>
-        ` : ''}
+        </article>
         
         <footer>
           <p>&copy; ${new Date().getFullYear()} MLSC Studio. All rights reserved.</p>
@@ -1568,9 +1570,8 @@ publicRoutes.get('/shop', (c) => {
           }
           
           .filter-button.active {
-            background-color: #333;
-            color: white;
-            border-color: #333;
+            background: var(--gray-100);
+            border-color: var(--gray-300);
           }
           
           /* Search box */
