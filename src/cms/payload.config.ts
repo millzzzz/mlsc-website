@@ -1,8 +1,7 @@
 import { buildConfig } from 'payload/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Editorial from './collections/Editorial.js';
-import Media from './collections/Media.js';
+import { collections } from '../cms.config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,11 +11,7 @@ export default buildConfig({
   admin: {
     user: 'users',
   },
-  collections: [
-    Editorial,
-    Media,
-    // Add other collections here
-  ],
+  collections,
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
   },

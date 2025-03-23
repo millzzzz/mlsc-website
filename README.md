@@ -282,3 +282,45 @@ FRONTEND_URL=http://localhost:3000
 ### Accessing the CMS
 
 The Payload CMS admin panel is available at `/admin`. 
+
+## Admin Panel & Content Management
+
+The website uses Payload CMS for content management. The admin panel is available at:
+
+- **Main Admin Panel**: [http://localhost:3000/admin](http://localhost:3000/admin)
+
+### Running the servers
+
+To run the website and admin server together, use:
+
+```
+bun run start-all
+```
+
+This will start:
+- The main website at http://localhost:8889
+- The admin panel at http://localhost:3000/admin
+
+### Admin Login
+
+To access the admin panel:
+1. Visit http://localhost:3000/admin
+2. Create a new account on first login
+3. Use this account to log in for future sessions
+
+### Adding Content
+
+1. **Editorial Content**: 
+   - In the admin panel, go to "Editorials"
+   - Click "Create New"
+   - Fill out the required fields (title, slug, featured image, etc.)
+   - Upload images to the Media collection first or directly in the Editorial form
+   - Set the status to "Published" when ready
+   - Save the content
+
+2. **Media Management**:
+   - Go to "Media" collection to upload and manage all media files
+   - Add metadata like alt text and captions
+   - Uploaded media will be accessible in the Editorial content editor
+
+The content you create in the admin panel will be automatically displayed on the website.

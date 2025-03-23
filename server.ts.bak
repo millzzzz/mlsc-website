@@ -1,0 +1,268 @@
+// server.ts - TypeScript server for production and development
+import { fileURLToPath } from 'url';
+import path from 'path';
+import fs from 'fs';
+import { Hono } from 'hono';
+import express from 'express';
+import { publicRoutes } from './src/routes/public';
+import { previewRoutes } from './src/routes/preview';
+import { apiRoutes } from './src/routes/api';
+import payload from 'payload';
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import type { CollectionConfig } from 'payload/types';
+
+// Import payload collections
+import Editorial from './src/cms/collections/Editorial';
+import Media from './src/cms/collections/Media';
+import User from './src/cms/collections/User';
+import Sketchbook from './src/cms/collections/Sketchbook';
+
+// Load environment variables
+dotenv.config();
+
+// Determine the root directory of the project
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Create Express app for Payload
+const expressApp = express();
+
+// Create Hono app for the frontend
+const app = new Hono();
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false
+  }
+});
+
+// Define the collections for Payload CMS
+const collections: CollectionConfig[] = [
+  Editorial,
+  Media,
+  User,
+  Sketchbook
+];
+
+// Initialize Payload CMS
+const startPayload = async (): Promise<void> => {
+  try {
+    // Ensure the uploads directory exists
+    const uploadsDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Initialize Payload with proper configuration
+    await payload.init({
+      secret: process.env.PAYLOAD_SECRET || 'MLSCWebsiteSecret123456789',
+      express: expressApp,
+      db: postgresAdapter({
+        pool: {
+          connectionString: process.env.SUPABASE_DATABASE_URL || '',
+          ssl: process.env.NODE_ENV === 'production',
+          max: 10,
+        },
+      }),
+      collections,
+      admin: {
+        user: 'users',
+        bundler: false,
+      },
+      upload: {
+        limits: {
+          fileSize: 5000000, // 5MB in bytes
+        },
+      },
+      onInit: () => {
+        console.log('✅ Payload CMS has initialized');
+      },
+    });
+  } catch (error) {
+    console.error('Failed to initialize Payload CMS:', error);
+    throw error;
+  }
+};
+
+// Set up static file handling
+app.get('/static/*', async (c) => {
+  const filePath = c.req.path.replace('/static/', '');
+  const fullPath = path.join(__dirname, 'static', filePath);
+  
+  try {
+    const data = fs.readFileSync(fullPath);
+    // Set appropriate content type based on file extension
+    const ext = path.extname(fullPath).toLowerCase();
+    let contentType = 'text/plain';
+    
+    switch (ext) {
+      case '.html': contentType = 'text/html'; break;
+      case '.css': contentType = 'text/css'; break;
+      case '.js': contentType = 'text/javascript'; break;
+      case '.json': contentType = 'application/json'; break;
+      case '.png': contentType = 'image/png'; break;
+      case '.jpg': case '.jpeg': contentType = 'image/jpeg'; break;
+      case '.gif': contentType = 'image/gif'; break;
+      case '.svg': contentType = 'image/svg+xml'; break;
+      case '.pdf': contentType = 'application/pdf'; break;
+      case '.ttf': contentType = 'font/ttf'; break;
+      case '.woff': contentType = 'font/woff'; break;
+      case '.woff2': contentType = 'font/woff2'; break;
+    }
+    
+    c.header('Content-Type', contentType);
+    return c.body(data);
+  } catch (error) {
+    console.error(`Error serving static file: ${filePath}`, error);
+    return c.notFound();
+  }
+});
+
+// Set up media handling for uploads via Supabase storage proxy
+app.get('/media/*', async (c) => {
+  const filePath = c.req.path.replace('/media/', '');
+  
+  try {
+    // Proxy the request to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('media')
+      .download(`uploads/${filePath}`);
+    
+    if (error || !data) {
+      console.error(`Error fetching media file from Supabase: ${filePath}`, error);
+      return c.notFound();
+    }
+    
+    const ext = path.extname(filePath).toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    switch (ext) {
+      case '.png': contentType = 'image/png'; break;
+      case '.jpg': case '.jpeg': contentType = 'image/jpeg'; break;
+      case '.gif': contentType = 'image/gif'; break;
+      case '.svg': contentType = 'image/svg+xml'; break;
+      case '.webp': contentType = 'image/webp'; break;
+    }
+    
+    c.header('Content-Type', contentType);
+    // Add cache control headers
+    c.header('Cache-Control', 'public, max-age=31536000'); // 1 year
+    return c.body(data);
+  } catch (error) {
+    console.error(`Error serving media file: ${filePath}`, error);
+    return c.notFound();
+  }
+});
+
+// Public routes
+app.route('/', publicRoutes);
+
+// API routes
+app.route('/api', apiRoutes);
+
+// Preview mode routes (for development/preview)
+app.use('*', async (c, next) => {
+  // Check if preview mode is enabled via query parameter
+  const previewParam = c.req.query('preview');
+  
+  // Set a flag on the context to indicate preview mode
+  if (previewParam === 'true') {
+    c.set('isPreviewMode', true);
+  }
+  
+  await next();
+});
+
+app.route('/preview', previewRoutes);
+
+// Create a handler for Payload CMS admin routes
+app.all('/admin*', async (c) => {
+  // Use Express as middleware in Hono for Payload Admin
+  const url = new URL(c.req.url);
+  const expressReq = Object.assign(
+    { url: url.pathname + url.search, method: c.req.method },
+    c.req.raw
+  );
+  
+  return new Promise((resolve) => {
+    let chunks: Uint8Array[] = [];
+    let done = false;
+    
+    const expressRes: any = {
+      getHeader: () => {},
+      setHeader: () => {},
+      on: () => {},
+      once: () => {},
+      emit: () => {},
+      write: (chunk: Uint8Array) => {
+        chunks.push(chunk);
+      },
+      end: (chunk?: Uint8Array) => {
+        if (chunk) chunks.push(chunk);
+        done = true;
+        
+        // Convert to Response
+        const headers = new Headers();
+        for (const [key, value] of Object.entries(expressRes.headers || {})) {
+          headers.set(key, value as string);
+        }
+        
+        resolve(new Response(Buffer.concat(chunks), {
+          status: expressRes.statusCode || 200,
+          headers
+        }));
+      },
+      statusCode: 200,
+      headers: {}
+    };
+    
+    expressApp(expressReq, expressRes);
+  });
+});
+
+// Initialize the server
+const PORT = process.env.PORT || 8889;
+
+// Start Payload CMS first, then the Hono server
+const initApp = async (): Promise<void> => {
+  try {
+    await startPayload();
+    
+    // Use Bun's built-in server
+    Bun.serve({
+      fetch: app.fetch,
+      port: PORT,
+    });
+    
+    console.log(`\n===============================`);
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🌐 Main site: http://localhost:${PORT}`);
+    console.log(`📝 Editorial page: http://localhost:${PORT}/editorial`);
+    console.log(`🔧 Admin dashboard: http://localhost:${PORT}/admin`);
+    console.log(`===============================\n`);
+    
+    // Build the editorial client bundle
+    console.log(`Building editorial client bundle...`);
+    const buildProcess = Bun.spawn(['bun', 'build', 'src/editorial.ts', '--outdir', 'public/scripts', '--target', 'browser', '--format', 'esm']);
+    const output = await Bun.readableStreamToText(buildProcess.stdout);
+    console.log(output);
+    console.log('✅ Editorial client bundle built successfully');
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Initialize the app
+initApp();
+
+// Export for serverless environments
+export default {
+  port: PORT,
+  fetch: app.fetch
+};

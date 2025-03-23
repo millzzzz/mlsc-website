@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { PreviewBanner } from '../components/PreviewBanner';
-import { getEditorialPosts, getEditorialPostBySlug, getEditorialPostsByCategory } from '../cms/api';
 
 // Define types for variables
 type Variables = {
@@ -680,8 +679,90 @@ publicRoutes.get('/paintings', (c) => {
 publicRoutes.get('/editorial', async (c) => {
   const isPreviewMode = c.get('isPreviewMode') || false;
   
-  // Fetch editorial posts from the CMS
-  const posts = await getEditorialPosts();
+  // Mock editorial posts instead of fetching from CMS
+  const posts = [
+    {
+      id: '1',
+      title: 'Example Editorial Post 1',
+      slug: 'example-post-1',
+      author: 'John Doe',
+      publishedDate: new Date().toISOString(),
+      category: 'design-principles',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 1',
+        width: 800,
+        height: 600
+      },
+      summary: 'This is a sample editorial post for testing purposes.',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 1',
+            width: 800,
+            height: 600
+          },
+          aspectRatio: 'landscape'
+        }
+      ]
+    },
+    {
+      id: '2',
+      title: 'Example Editorial Post 2',
+      slug: 'example-post-2',
+      author: 'Jane Smith',
+      publishedDate: new Date().toISOString(),
+      category: 'music-visual-art',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 2',
+        width: 600,
+        height: 800
+      },
+      summary: 'Another sample editorial post for testing.',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 2',
+            width: 600,
+            height: 800
+          },
+          aspectRatio: 'portrait'
+        }
+      ]
+    },
+    {
+      id: '3',
+      title: 'Example Editorial Post 3',
+      slug: 'example-post-3',
+      author: 'Alex Johnson',
+      publishedDate: new Date().toISOString(),
+      category: 'sketchbooks',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 3',
+        width: 800,
+        height: 800
+      },
+      summary: 'A third sample editorial post for testing.',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 3',
+            width: 800,
+            height: 800
+          },
+          aspectRatio: 'square'
+        }
+      ]
+    }
+  ];
   
   return c.html(html`
     <!DOCTYPE html>
@@ -753,82 +834,46 @@ publicRoutes.get('/editorial', async (c) => {
             opacity: 0.9;
           }
           
-          .editorial-content {
-            max-width: 100%;
-            margin: 0 auto;
+          footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.8rem;
+            color: #777;
+            text-align: center;
           }
           
-          .categories {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-            gap: 10px;
-          }
-          
-          .category-button {
-            background: none;
-            border: 1px solid #ddd;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-          }
-          
-          .category-button:hover {
-            background-color: #f5f5f5;
-          }
-          
-          .category-button.active {
-            background-color: #333;
-            color: white;
-            border-color: #333;
-          }
-          
-          /* Masonry Grid */
+          /* Simple masonry grid */
           .masonry-grid {
             display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            grid-gap: 15px;
-            margin-bottom: 60px;
-          }
-          
-          @media (min-width: 640px) {
-            .masonry-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-          
-          @media (min-width: 1024px) {
-            .masonry-grid {
-              grid-template-columns: repeat(3, 1fr);
-            }
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 20px;
+            grid-auto-flow: dense;
           }
           
           .grid-item {
             position: relative;
-            margin-bottom: 15px;
-            break-inside: avoid;
-            background-color: #fff;
             overflow: hidden;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
           }
           
-          .grid-item a {
-            display: block;
-            text-decoration: none;
-            color: inherit;
+          .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
           }
           
           .grid-item img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             display: block;
             transition: transform 0.5s ease;
           }
           
           .grid-item:hover img {
-            transform: scale(1.03);
+            transform: scale(1.05);
           }
           
           .grid-item-overlay {
@@ -848,16 +893,15 @@ publicRoutes.get('/editorial', async (c) => {
           
           .grid-item-overlay h3 {
             margin: 0 0 5px;
-            font-size: 1.1rem;
+            font-size: 18px;
           }
           
           .grid-item-overlay p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 14px;
             color: #666;
           }
           
-          /* Items with different aspect ratios */
           .grid-item.portrait {
             grid-row: span 2;
           }
@@ -874,90 +918,27 @@ publicRoutes.get('/editorial', async (c) => {
             grid-column: span 2;
           }
           
-          .grid-item.full-width {
-            grid-column: 1 / -1;
-          }
-          
-          /* Articles preview section */
-          .articles-preview {
-            margin-top: 60px;
-          }
-          
-          .articles-preview h2 {
-            font-size: 1.8rem;
-            margin-bottom: 30px;
-            text-align: center;
-          }
-          
-          .article-card {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 30px;
-            border: 1px solid #eee;
-            border-radius: 5px;
-            overflow: hidden;
-          }
-          
-          @media (min-width: 768px) {
-            .article-card {
-              flex-direction: row;
+          @media (max-width: 768px) {
+            .masonry-grid {
+              grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .grid-item.wide {
+              grid-column: span 1;
             }
           }
           
-          .article-image {
-            flex: 0 0 200px;
-            overflow: hidden;
-          }
-          
-          .article-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-          }
-          
-          .article-card:hover .article-image img {
-            transform: scale(1.05);
-          }
-          
-          .article-content {
-            flex: 1;
-            padding: 20px;
-          }
-          
-          .article-content h3 {
-            margin: 0 0 10px;
-            font-size: 1.4rem;
-          }
-          
-          .article-meta {
-            display: flex;
-            gap: 15px;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-          }
-          
-          .article-summary {
-            margin-bottom: 15px;
-            line-height: 1.5;
-          }
-          
-          .read-more {
-            display: inline-block;
-            color: #222;
-            font-weight: bold;
-            text-decoration: none;
-            border-bottom: 2px solid #222;
-            transition: all 0.2s;
-          }
-          
-          .read-more:hover {
-            color: #555;
-            border-color: #555;
+          @media (max-width: 480px) {
+            .masonry-grid {
+              grid-template-columns: 1fr;
+            }
           }
         </style>
+        <!-- Import React and our styles -->
+        <link rel="stylesheet" href="/public/scripts/editorial.css">
+        <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+        <script src="https://unpkg.com/react-masonry-css@1.0.16/dist/react-masonry-css.min.js" crossorigin></script>
       </head>
       <body>
         ${isPreviewMode ? PreviewBanner() : ''}
@@ -975,112 +956,174 @@ publicRoutes.get('/editorial', async (c) => {
           </nav>
         </header>
         
-        <div class="editorial-content">
-          
-          <div class="categories">
-            <button class="category-button active" data-category="all">All</button>
-            <button class="category-button" data-category="music-visual-art">Music & Visual Art</button>
-            <button class="category-button" data-category="urban-transit">Urban Transit</button>
-            <button class="category-button" data-category="sketchbooks">Sketchbooks</button>
-            <button class="category-button" data-category="design-principles">Design Principles</button>
-          </div>
-          
-          <div id="editorial-grid" class="masonry-grid">
-            ${posts.map(post => {
-              // Get the first gallery image or use featured image as fallback
-              const displayImage = post.galleryImages && post.galleryImages.length > 0 
-                ? post.galleryImages[0].image 
-                : post.featuredImage;
-              
-              const aspectRatio = post.galleryImages && post.galleryImages.length > 0 
-                ? post.galleryImages[0].aspectRatio 
-                : 'square';
-              
-              const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-              
-              return html`
-                <div class="grid-item ${aspectRatio}">
-                  <a href="/editorial/${post.slug}">
-                    <img src="${displayImage.url}" alt="${displayImage.alt}" loading="lazy" />
-                    <div class="grid-item-overlay">
-                      <h3>${post.title}</h3>
-                      <p>${post.category} · ${formattedDate}</p>
-                    </div>
-                  </a>
+        <!-- React app container -->
+        <div id="editorial-app">
+          <!-- Fallback content if React fails to load -->
+          <div class="masonry-grid">
+            <div class="grid-item square" data-category="design-principles">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 1" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 1</h3>
+                  <p>Design Principles</p>
                 </div>
-              `;
-            }).join('')}
-          </div>
-          
-          <div class="articles-preview">
-            <h2>Latest Essays</h2>
-            ${posts.filter(post => post.displayType === 'article').slice(0, 3).map(post => {
-              const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-              
-              return html`
-                <div class="article-card">
-                  <div class="article-image">
-                    <img src="${post.featuredImage.url}" alt="${post.featuredImage.alt}" />
-                  </div>
-                  <div class="article-content">
-                    <h3>${post.title}</h3>
-                    <div class="article-meta">
-                      <span>${formattedDate}</span>
-                      <span>${post.author}</span>
-                      <span>${post.category}</span>
-                    </div>
-                    <div class="article-summary">
-                      ${post.summary}
-                    </div>
-                    <a href="/editorial/${post.slug}" class="read-more">Read more</a>
-                  </div>
+              </a>
+            </div>
+            <div class="grid-item portrait" data-category="music-visual-art">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 2" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 2</h3>
+                  <p>Music Visual Art</p>
                 </div>
-              `;
-            }).join('')}
+              </a>
+            </div>
+            <div class="grid-item landscape" data-category="sketchbooks">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 3" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 3</h3>
+                  <p>Sketchbooks</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item wide" data-category="urban-transit">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 4" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 4</h3>
+                  <p>Urban Transit</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item square" data-category="music-visual-art">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 5" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 5</h3>
+                  <p>Music Visual Art</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item portrait" data-category="design-principles">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 6" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 6</h3>
+                  <p>Design Principles</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item landscape" data-category="urban-transit">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 7" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 7</h3>
+                  <p>Urban Transit</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item wide" data-category="sketchbooks">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 8" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 8</h3>
+                  <p>Sketchbooks</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item square" data-category="urban-transit">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 9" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 9</h3>
+                  <p>Urban Transit</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item portrait" data-category="sketchbooks">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 10" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 10</h3>
+                  <p>Sketchbooks</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item landscape" data-category="music-visual-art">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 11" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 11</h3>
+                  <p>Music Visual Art</p>
+                </div>
+              </a>
+            </div>
+            <div class="grid-item wide" data-category="design-principles">
+              <a href="#">
+                <img src="/static/mlsc-logo.png" alt="Artwork 12" loading="lazy" />
+                <div class="grid-item-overlay">
+                  <h3>Artwork 12</h3>
+                  <p>Design Principles</p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
         
+        <!-- Load editorial data and render the React app -->
         <script>
-          // Filtering functionality for categories
+          const posts = ${JSON.stringify(posts)};
+          const isPreviewMode = ${isPreviewMode};
+          
+          // Simple masonry grid fallback if React fails to load
           document.addEventListener('DOMContentLoaded', function() {
-            const categoryButtons = document.querySelectorAll('.category-button');
-            const gridItems = document.querySelectorAll('.grid-item');
-            
-            categoryButtons.forEach(button => {
-              button.addEventListener('click', () => {
-                // Update active state
-                categoryButtons.forEach(b => b.classList.remove('active'));
-                button.classList.add('active');
+            // Check if React loaded correctly
+            if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+              console.error('React or ReactDOM failed to load');
+              
+              // Create a simple grid fallback
+              const container = document.getElementById('editorial-app');
+              let gridHTML = '<div class="masonry-grid">';
+              
+              posts.forEach(post => {
+                const displayImage = post.galleryImages && post.galleryImages.length > 0 
+                  ? post.galleryImages[0].image 
+                  : post.featuredImage;
                 
-                const category = button.dataset.category;
+                const aspectRatio = post.galleryImages && post.galleryImages.length > 0 
+                  ? post.galleryImages[0].aspectRatio 
+                  : 'square';
                 
-                if (category === 'all') {
-                  // Show all items
-                  gridItems.forEach(item => {
-                    item.style.display = 'block';
-                  });
-                } else {
-                  // Filter items
-                  gridItems.forEach(item => {
-                    const itemCategory = item.querySelector('.grid-item-overlay p').textContent.split(' · ')[0].toLowerCase();
-                    
-                    if (itemCategory.includes(category)) {
-                      item.style.display = 'block';
-                    } else {
-                      item.style.display = 'none';
-                    }
-                  });
-                }
+                gridHTML += \`
+                  <div class="grid-item \${aspectRatio}" data-category="\${post.category}">
+                    <a href="/editorial/\${post.slug}">
+                      <img src="\${displayImage.url}" alt="\${displayImage.alt || post.title}" loading="lazy" />
+                      <div class="grid-item-overlay">
+                        <h3>\${post.title}</h3>
+                        <p>\${post.category.replace(/-/g, ' ').replace(/\\b\\w/g, function(l) { return l.toUpperCase(); })}</p>
+                      </div>
+                    </a>
+                  </div>
+                \`;
               });
-            });
+              
+              gridHTML += '</div>';
+              container.innerHTML = gridHTML;
+            } else {
+              // If React is available, load our component script
+              const script = document.createElement('script');
+              script.src = '/public/scripts/editorial.js';
+              script.onload = function() {
+                // Call the render function once the script is loaded
+                if (typeof window.renderEditorialPage === 'function') {
+                  window.renderEditorialPage(posts, isPreviewMode);
+                } else {
+                  console.error('renderEditorialPage function not found');
+                }
+              };
+              document.body.appendChild(script);
+            }
           });
         </script>
         
@@ -1097,8 +1140,96 @@ publicRoutes.get('/editorial/:slug', async (c) => {
   const isPreviewMode = c.get('isPreviewMode') || false;
   const slug = c.req.param('slug');
   
-  // Fetch the post data from the CMS
-  const post = await getEditorialPostBySlug(slug);
+  // Mock post data based on slug
+  const mockPosts: Record<string, any> = {
+    'example-post-1': {
+      id: '1',
+      title: 'Example Editorial Post 1',
+      slug: 'example-post-1',
+      author: 'John Doe',
+      publishedDate: new Date().toISOString(),
+      category: 'design-principles',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 1',
+        width: 800,
+        height: 600
+      },
+      summary: 'This is a sample editorial post for testing purposes.',
+      content: '<p>This is the full content of the editorial post. It can include rich text formatting.</p>',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 1',
+            width: 800,
+            height: 600
+          },
+          aspectRatio: 'landscape'
+        }
+      ]
+    },
+    'example-post-2': {
+      id: '2',
+      title: 'Example Editorial Post 2',
+      slug: 'example-post-2',
+      author: 'Jane Smith',
+      publishedDate: new Date().toISOString(),
+      category: 'music-visual-art',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 2',
+        width: 600,
+        height: 800
+      },
+      summary: 'Another sample editorial post for testing.',
+      content: '<p>This is the full content of the second editorial post.</p>',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 2',
+            width: 600,
+            height: 800
+          },
+          aspectRatio: 'portrait'
+        }
+      ]
+    },
+    'example-post-3': {
+      id: '3',
+      title: 'Example Editorial Post 3',
+      slug: 'example-post-3',
+      author: 'Alex Johnson',
+      publishedDate: new Date().toISOString(),
+      category: 'sketchbooks',
+      displayType: 'gallery',
+      featuredImage: {
+        url: '/static/mlsc-logo.png',
+        alt: 'Placeholder Image 3',
+        width: 800,
+        height: 800
+      },
+      summary: 'A third sample editorial post for testing.',
+      content: '<p>This is the full content of the third editorial post.</p>',
+      galleryImages: [
+        {
+          image: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Gallery Image 3',
+            width: 800,
+            height: 800
+          },
+          aspectRatio: 'square'
+        }
+      ]
+    }
+  };
+  
+  // Get the post data for the requested slug
+  const post = mockPosts[slug];
   
   // If post not found, return 404
   if (!post) {
@@ -1333,6 +1464,18 @@ publicRoutes.get('/editorial/:slug', async (c) => {
           
           .article-content li {
             margin-bottom: 0.5rem;
+          }
+          
+          .article-content blockquote {
+            margin: 2rem 0;
+            padding: 1rem 1.5rem;
+            border-left: 4px solid #333;
+            background-color: #f8f8f8;
+            font-style: italic;
+          }
+          
+          .article-content blockquote p:last-child {
+            margin-bottom: 0;
           }
           
           .article-content blockquote {
@@ -2036,5 +2179,37 @@ publicRoutes.get('/pdf', (c) => {
     </html>
   `);
 });
+
+// Helper function to generate dummy posts for visualization
+function generateDummyPosts() {
+  const categories = ['music-visual-art', 'urban-transit', 'sketchbooks', 'design-principles'];
+  const aspectRatios = ['square', 'portrait', 'landscape', 'wide', 'full-width'] as const;
+  
+  return Array.from({ length: 12 }, (_, i) => ({
+    id: `dummy-${i}`,
+    title: `Sample Post ${i + 1}`,
+    slug: `sample-post-${i + 1}`,
+    author: 'MLSC Studio',
+    publishedDate: new Date().toISOString(),
+    category: categories[i % categories.length],
+    displayType: i % 3 === 0 ? 'article' : 'gallery' as 'gallery' | 'article',
+    featuredImage: {
+      url: `/static/placeholder-${(i % 5) + 1}.jpg`,
+      alt: `Placeholder image ${i + 1}`,
+      caption: 'Sample image',
+    },
+    summary: 'This is a placeholder post to demonstrate the editorial grid layout.',
+    content: null,
+    galleryImages: Array.from({ length: 3 }, (_, j) => ({
+      image: {
+        url: `/static/placeholder-${((i + j) % 5) + 1}.jpg`,
+        alt: `Gallery image ${j + 1}`,
+      },
+      caption: `Image ${j + 1}`,
+      aspectRatio: aspectRatios[(i + j) % aspectRatios.length],
+      priority: j,
+    })),
+  }));
+}
 
 export { publicRoutes };

@@ -328,3 +328,6 @@ if (import.meta.main) {
 }
 
 export default app;
+
+// Export the client-side rendering function
+export { hydrateEditorialPage } from './components/editorial/EditorialClient';

@@ -1,0 +1,256 @@
+.editorial-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.editorial-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.editorial-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: normal;
+  letter-spacing: 1px;
+}
+
+/* Navigation styles */
+.editorial-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #666;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+  padding-bottom: 0.25rem;
+}
+
+.nav-link:hover {
+  color: #000;
+}
+
+.nav-link.active {
+  color: #000;
+}
+
+/* Category filter buttons */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.category-button {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 2rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-button:hover {
+  background-color: #f5f5f5;
+}
+
+.category-button.active {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* Masonry grid styles */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.masonry-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  transition: opacity 0.3s ease;
+}
+
+.masonry-item:hover {
+  opacity: 0.9;
+}
+
+/* Aspect ratio classes */
+.masonry-item.square {
+  aspect-ratio: 1/1;
+}
+
+.masonry-item.portrait {
+  aspect-ratio: 3/4;
+}
+
+.masonry-item.landscape {
+  aspect-ratio: 4/3;
+}
+
+.editorial-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.editorial-image {
+  width: 100%;
+  height: 0;
+  padding-bottom: 66.67%; /* 2:3 aspect ratio */
+  position: relative;
+  overflow: hidden;
+}
+
+.editorial-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.editorial-content {
+  padding: 1rem 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editorial-content h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.editorial-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.editorial-excerpt {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.5;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.editorial-category {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  font-weight: 600;
+}
+
+.editorial-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.no-editorials {
+  text-align: center;
+  padding: 3rem;
+  background-color: #f9f9f9;
+  border-radius: 0;
+}
+
+.preview-mode {
+  background-color: #fffaf0;
+  border: 2px dashed #ffa500;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+/* Editorial footer */
+.editorial-footer {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editorial-header h1 {
+    font-size: 2rem;
+  }
+  
+  .editorial-nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .editorial-content h2 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .editorial-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .categories {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .category-button {
+    width: 100%;
+    max-width: 250px;
+  }
+} 

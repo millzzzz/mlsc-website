@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types';
+import { CollectionConfig } from 'payload';
 
 const User: CollectionConfig = {
   slug: 'users',
@@ -10,28 +10,26 @@ const User: CollectionConfig = {
     read: () => true,
   },
   fields: [
+    // Email is added automatically because auth: true
     {
-      type: 'text',
       name: 'name',
-      label: 'Name',
-      required: true,
+      type: 'text',
     },
     {
-      type: 'row',
-      fields: [
+      name: 'role',
+      type: 'select',
+      options: [
         {
-          type: 'checkbox',
-          name: 'isAdmin',
-          label: 'Administrator Access',
-          defaultValue: false,
+          label: 'Admin',
+          value: 'admin',
         },
         {
-          type: 'checkbox',
-          name: 'isContentEditor',
-          label: 'Content Editor Access',
-          defaultValue: true,
+          label: 'Editor',
+          value: 'editor',
         },
       ],
+      defaultValue: 'editor',
+      required: true,
     },
   ],
 };

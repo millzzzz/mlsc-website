@@ -100,6 +100,30 @@ export const getEditorialPostsByCategory = async (category: string): Promise<Edi
   }
 };
 
+// Get all gallery posts (used by API)
+export const getGalleryPosts = async (): Promise<EditorialPost[]> => {
+  try {
+    const response = await payload.find({
+      collection: 'editorials',
+      where: {
+        status: {
+          equals: 'published',
+        },
+        displayType: {
+          equals: 'gallery',
+        },
+      },
+      sort: '-publishedDate',
+      depth: 2,
+    });
+
+    return response.docs.map(transformEditorialPost);
+  } catch (error) {
+    console.error('Error fetching gallery posts:', error);
+    return [];
+  }
+};
+
 // Helper function to transform Payload response to our expected format
 function transformEditorialPost(doc: any): EditorialPost {
   return {

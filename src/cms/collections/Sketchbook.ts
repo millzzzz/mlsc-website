@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types';
+import { CollectionConfig } from 'payload';
 
 const Sketchbook: CollectionConfig = {
   slug: 'sketchbooks',
@@ -20,6 +20,9 @@ const Sketchbook: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      admin: {
+        description: 'URL-friendly version of the title (e.g., "sketch-notebook-2023")'
+      }
     },
     {
       name: 'status',
@@ -43,7 +46,7 @@ const Sketchbook: CollectionConfig = {
       required: true,
     },
     {
-      name: 'description',
+      name: 'summary',
       type: 'textarea',
     },
     {
@@ -53,8 +56,15 @@ const Sketchbook: CollectionConfig = {
       required: true,
     },
     {
-      name: 'sketchbookImages',
+      name: 'description',
+      type: 'richText',
+    },
+    {
+      name: 'sketchImages',
       type: 'array',
+      admin: {
+        description: 'Add images from your sketchbook',
+      },
       fields: [
         {
           name: 'image',
@@ -67,27 +77,20 @@ const Sketchbook: CollectionConfig = {
           type: 'text',
         },
         {
-          name: 'aspectRatio',
-          type: 'select',
-          options: [
-            {
-              label: 'Square (1:1)',
-              value: 'square',
-            },
-            {
-              label: 'Portrait (3:4)',
-              value: 'portrait',
-            },
-            {
-              label: 'Landscape (4:3)',
-              value: 'landscape',
-            },
-            {
-              label: 'Wide (16:9)',
-              value: 'wide',
-            },
-          ],
-          defaultValue: 'square',
+          name: 'position',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            description: 'Position in the sketchbook (0 is first)',
+          },
+        },
+        {
+          name: 'fullWidth',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Display this image full width',
+          },
         },
       ],
     },

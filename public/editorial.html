@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editorial | MLSC Website</title>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/scripts/editorial.css">
+  <!-- Add masonry-specific styles -->
+  <style>
+    /* Base styles for masonry grid */
+    .masonry-grid {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .masonry-column {
+      flex: 1;
+      padding: 0 8px;
+    }
+    
+    .masonry-item {
+      margin-bottom: 16px;
+      break-inside: avoid;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .masonry-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .editorial-card {
+      background: white;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editorial-image {
+      overflow: hidden;
+    }
+    
+    .editorial-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    
+    .editorial-card:hover .editorial-image img {
+      transform: scale(1.05);
+    }
+    
+    .editorial-content {
+      padding: 16px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editorial-content h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .editorial-meta {
+      font-size: 0.8rem;
+      color: #777;
+      margin-bottom: 8px;
+    }
+    
+    .editorial-excerpt {
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+    
+    .editorial-category {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #555;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .masonry-grid {
+        flex-direction: column;
+      }
+    }
+    
+    /* Different aspect ratios */
+    .square {
+      aspect-ratio: 1/1;
+    }
+    
+    .portrait {
+      aspect-ratio: 3/4;
+    }
+    
+    .landscape {
+      aspect-ratio: 4/3;
+    }
+    
+    .wide {
+      aspect-ratio: 16/9;
+    }
+    
+    /* Category buttons */
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    
+    .category-button {
+      padding: 8px 16px;
+      border: none;
+      background: #f0f0f0;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .category-button.active {
+      background: #333;
+      color: white;
+    }
+    
+    .editorial-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 32px 0;
+    }
+    
+    .editorial-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+    
+    .editorial-header p {
+      font-size: 1.1rem;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">
+        <a href="/">MLSC</a>
+      </div>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/events">Events</a></li>
+          <li><a href="/editorial" class="active">Editorial</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- The editorial app will be mounted here -->
+    <div id="editorial-app">
+      <div class="editorial-header">
+        <h1>Editorial</h1>
+        <p>Explore our collection of articles, galleries, and insights on design, architecture, urban planning, and more.</p>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div id="loading" style="text-align: center; padding: 2rem;">
+        <p>Loading editorial content...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          MLSC
+        </div>
+        <div class="footer-links">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/editorial">Editorial</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-social">
+          <a href="#" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <a href="#" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2023 MLSC. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script to fetch data from API and render the editorial app -->
+  <script type="module">
+    // Fetch real data from the API
+    async function fetchEditorials() {
+      try {
+        const response = await fetch('/api/editorial');
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.posts || [];
+      } catch (error) {
+        console.error('Error fetching editorials:', error);
+        // Return sample data as fallback if API fails
+        return getSamplePosts();
+      }
+    }
+    
+    // Function to get sample posts as fallback
+    function getSamplePosts() {
+      return [
+        {
+          id: '1',
+          title: 'Urban Transit Systems in Modern Cities',
+          slug: 'urban-transit-systems',
+          author: 'Jane Smith',
+          publishedDate: '2023-04-15',
+          category: 'urban-transit',
+          summary: 'A look at how urban transit systems are evolving in modern cities and what this means for urban planning.',
+          featuredImage: {
+            url: 'https://images.unsplash.com/photo-1519741347686-c1e331ec5a18',
+            alt: 'Urban transit system',
+            width: 1200,
+            height: 800
+          }
+        },
+        {
+          id: '2',
+          title: 'The Intersection of Music and Visual Art',
+          slug: 'music-visual-art-intersection',
+          author: 'Alex Johnson',
+          publishedDate: '2023-03-28',
+          category: 'music-visual-art',
+          summary: 'Exploring the rich relationship between music and visual arts throughout history.',
+          featuredImage: {
+            url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d',
+            alt: 'Music and art',
+            width: 1200,
+            height: 800
+          },
+          galleryImages: [
+            {
+              image: {
+                url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d',
+                alt: 'Music and art',
+                width: 1200,
+                height: 800
+              },
+              aspectRatio: 'landscape'
+            }
+          ]
+        },
+        {
+          id: '3',
+          title: 'Sketchbook Journal: Barcelona Architecture',
+          slug: 'barcelona-architecture-sketchbook',
+          author: 'Maria Garcia',
+          publishedDate: '2023-05-10',
+          category: 'sketchbooks',
+          summary: 'A collection of sketches documenting the unique architectural features of Barcelona.',
+          featuredImage: {
+            url: 'https://images.unsplash.com/photo-1583407733101-dea598779f35',
+            alt: 'Barcelona architecture sketch',
+            width: 800,
+            height: 1200
+          },
+          galleryImages: [
+            {
+              image: {
+                url: 'https://images.unsplash.com/photo-1583407733101-dea598779f35',
+                alt: 'Barcelona architecture sketch',
+                width: 800,
+                height: 1200
+              },
+              aspectRatio: 'portrait'
+            }
+          ]
+        },
+        {
+          id: '4',
+          title: 'Design Principles for Sustainable Architecture',
+          slug: 'sustainable-architecture-principles',
+          author: 'Carlos Rodriguez',
+          publishedDate: '2023-02-18',
+          category: 'design-principles',
+          summary: 'An examination of key design principles that contribute to sustainable architectural practices.',
+          featuredImage: {
+            url: 'https://images.unsplash.com/photo-1518005068251-37900150dfca',
+            alt: 'Sustainable architecture',
+            width: 1200,
+            height: 1200
+          },
+          galleryImages: [
+            {
+              image: {
+                url: 'https://images.unsplash.com/photo-1518005068251-37900150dfca', 
+                alt: 'Sustainable architecture',
+                width: 1200,
+                height: 1200
+              },
+              aspectRatio: 'square'
+            }
+          ]
+        }
+      ];
+    }
+
+    // Main function to initialize the editorial page
+    async function initEditorialPage() {
+      try {
+        // Fetch editorials from API
+        const posts = await fetchEditorials();
+        
+        // Import the client-side rendering function
+        const module = await import('/scripts/editorial.js');
+        
+        // Hide loading indicator
+        document.getElementById('loading').style.display = 'none';
+        
+        // Call the function to render the editorial page
+        if (typeof window.renderEditorialPage === 'function') {
+          window.renderEditorialPage(posts, false);
+        } else if (module && typeof module.hydrateEditorialPage === 'function') {
+          module.hydrateEditorialPage('editorial-app', posts, false);
+        } else {
+          // Fallback to manual rendering if module doesn't load correctly
+          renderFallbackUI(posts);
+        }
+      } catch (error) {
+        console.error('Failed to initialize editorial page:', error);
+        renderErrorUI(error);
+      }
+    }
+    
+    // Fallback UI renderer if module fails to load
+    function renderFallbackUI(posts) {
+      const container = document.getElementById('editorial-app');
+      
+      let html = `
+        <div class="editorial-header">
+          <h1>Editorial</h1>
+          <p>Explore our collection of articles, galleries, and insights on design, architecture, urban planning, and more.</p>
+        </div>
+        
+        <div class="categories">
+          <button class="category-button active" data-category="all">All</button>
+      `;
+      
+      // Get unique categories
+      const categories = [...new Set(posts.map(post => post.category))];
+      
+      // Add category buttons
+      categories.forEach(category => {
+        const name = category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        html += `<button class="category-button" data-category="${category}">${name}</button>`;
+      });
+      
+      html += '</div><div class="masonry-grid">';
+      
+      // Create columns based on screen width
+      const columnCount = window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
+      for (let i = 0; i < columnCount; i++) {
+        html += `<div class="masonry-column">`;
+        
+        // Add posts to this column
+        posts.filter((_, index) => index % columnCount === i).forEach(post => {
+          const aspectRatio = post.galleryImages && post.galleryImages.length > 0 
+            ? post.galleryImages[0].aspectRatio 
+            : 'square';
+          
+          const imageUrl = post.galleryImages && post.galleryImages.length > 0 
+            ? post.galleryImages[0].image.url 
+            : post.featuredImage.url;
+          
+          const imageAlt = post.galleryImages && post.galleryImages.length > 0 
+            ? post.galleryImages[0].image.alt 
+            : post.featuredImage.alt;
+          
+          html += `
+            <div class="masonry-item ${aspectRatio}" data-category="${post.category}">
+              <a href="/editorial/${post.slug}" class="editorial-link">
+                <div class="editorial-card">
+                  <div class="editorial-image">
+                    <img src="${imageUrl}" alt="${imageAlt}" loading="lazy">
+                  </div>
+                  <div class="editorial-content">
+                    <h2>${post.title}</h2>
+                    <p class="editorial-meta">${new Date(post.publishedDate).toLocaleDateString()} • ${post.author}</p>
+                    <div class="editorial-excerpt">${post.summary || ''}</div>
+                    <div class="editorial-category">${post.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+      }
+      
+      html += '</div>';
+      container.innerHTML = html;
+      
+      // Add event listeners for category filtering
+      setTimeout(() => {
+        const buttons = container.querySelectorAll('.category-button');
+        const items = container.querySelectorAll('.masonry-item');
+        
+        buttons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            buttons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            const category = button.getAttribute('data-category');
+            
+            // Show/hide items based on category
+            items.forEach(item => {
+              if (category === 'all' || item.getAttribute('data-category') === category) {
+                item.style.display = 'block';
+              } else {
+                item.style.display = 'none';
+              }
+            });
+          });
+        });
+      }, 100);
+    }
+    
+    // Error UI renderer
+    function renderErrorUI(error) {
+      document.getElementById('editorial-app').innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+          <h2>Error Loading Editorial Content</h2>
+          <p>Sorry, there was a problem loading the editorial content. Please try again later.</p>
+          <p><small>Technical Error: ${error.message}</small></p>
+        </div>
+      `;
+    }
+    
+    // Initialize the page
+    initEditorialPage();
+  </script>
+</body>
+</html> 
