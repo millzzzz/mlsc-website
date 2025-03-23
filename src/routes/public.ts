@@ -677,100 +677,51 @@ publicRoutes.get('/paintings', (c) => {
 
 // Editorial page
 publicRoutes.get('/editorial', async (c) => {
-  const isPreviewMode = c.get('isPreviewMode') || false;
-  
-  // Mock editorial posts instead of fetching from CMS
-  const posts = [
-    {
-      id: '1',
-      title: 'Example Editorial Post 1',
-      slug: 'example-post-1',
-      author: 'John Doe',
-      publishedDate: new Date().toISOString(),
-      category: 'design-principles',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 1',
-        width: 800,
-        height: 600
-      },
-      summary: 'This is a sample editorial post for testing purposes.',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 1',
-            width: 800,
-            height: 600
-          },
-          aspectRatio: 'landscape'
-        }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Example Editorial Post 2',
-      slug: 'example-post-2',
-      author: 'Jane Smith',
-      publishedDate: new Date().toISOString(),
-      category: 'music-visual-art',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 2',
-        width: 600,
-        height: 800
-      },
-      summary: 'Another sample editorial post for testing.',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 2',
-            width: 600,
-            height: 800
-          },
-          aspectRatio: 'portrait'
-        }
-      ]
-    },
-    {
-      id: '3',
-      title: 'Example Editorial Post 3',
-      slug: 'example-post-3',
-      author: 'Alex Johnson',
-      publishedDate: new Date().toISOString(),
-      category: 'sketchbooks',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 3',
-        width: 800,
-        height: 800
-      },
-      summary: 'A third sample editorial post for testing.',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 3',
-            width: 800,
-            height: 800
-          },
-          aspectRatio: 'square'
-        }
-      ]
+  try {
+    // Fetch editorial posts from Payload CMS API
+    const apiUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000';
+    const response = await fetch(`${apiUrl}/api/editorial?limit=12&depth=1`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch editorial posts: ${response.status}`);
     }
-  ];
-  
-  return c.html(html`
-    <!DOCTYPE html>
-    <html lang="en">
+    
+    const data = await response.json();
+    let posts = data.docs || [];
+    
+    // Fallback to mock data if no posts or error occurred
+    if (!posts || posts.length === 0) {
+      console.log('No posts found from CMS, using mock data');
+      posts = [
+        {
+          id: '1',
+          title: 'Artwork 1',
+          slug: 'artwork-1',
+          author: 'MLSC',
+          publishedDate: new Date().toISOString(),
+          category: 'design-principles',
+          displayType: 'standard',
+          featuredImage: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Artwork 1',
+          },
+          summary: 'Example summary for mock post 1',
+          galleryImages: []
+        },
+        // ... More mock posts can be defined here if needed
+      ];
+    }
+    
+    // Return the HTML for the editorial page
+    const isPreviewMode = c.req.query('preview') === 'true';
+    
+    return c.html(html`
+      <!DOCTYPE html>
+      <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Editorial - MLSC Studio</title>
+        <title>Editorial | MLSC Studio</title>
         <style>
           /* Base styles */
           body {
@@ -1133,111 +1084,13 @@ publicRoutes.get('/editorial', async (c) => {
       </body>
     </html>
   `);
-});
-
-// Editorial single post page
-publicRoutes.get('/editorial/:slug', async (c) => {
-  const isPreviewMode = c.get('isPreviewMode') || false;
-  const slug = c.req.param('slug');
-  
-  // Mock post data based on slug
-  const mockPosts: Record<string, any> = {
-    'example-post-1': {
-      id: '1',
-      title: 'Example Editorial Post 1',
-      slug: 'example-post-1',
-      author: 'John Doe',
-      publishedDate: new Date().toISOString(),
-      category: 'design-principles',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 1',
-        width: 800,
-        height: 600
-      },
-      summary: 'This is a sample editorial post for testing purposes.',
-      content: '<p>This is the full content of the editorial post. It can include rich text formatting.</p>',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 1',
-            width: 800,
-            height: 600
-          },
-          aspectRatio: 'landscape'
-        }
-      ]
-    },
-    'example-post-2': {
-      id: '2',
-      title: 'Example Editorial Post 2',
-      slug: 'example-post-2',
-      author: 'Jane Smith',
-      publishedDate: new Date().toISOString(),
-      category: 'music-visual-art',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 2',
-        width: 600,
-        height: 800
-      },
-      summary: 'Another sample editorial post for testing.',
-      content: '<p>This is the full content of the second editorial post.</p>',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 2',
-            width: 600,
-            height: 800
-          },
-          aspectRatio: 'portrait'
-        }
-      ]
-    },
-    'example-post-3': {
-      id: '3',
-      title: 'Example Editorial Post 3',
-      slug: 'example-post-3',
-      author: 'Alex Johnson',
-      publishedDate: new Date().toISOString(),
-      category: 'sketchbooks',
-      displayType: 'gallery',
-      featuredImage: {
-        url: '/static/mlsc-logo.png',
-        alt: 'Placeholder Image 3',
-        width: 800,
-        height: 800
-      },
-      summary: 'A third sample editorial post for testing.',
-      content: '<p>This is the full content of the third editorial post.</p>',
-      galleryImages: [
-        {
-          image: {
-            url: '/static/mlsc-logo.png',
-            alt: 'Gallery Image 3',
-            width: 800,
-            height: 800
-          },
-          aspectRatio: 'square'
-        }
-      ]
-    }
-  };
-  
-  // Get the post data for the requested slug
-  const post = mockPosts[slug];
-  
-  // If post not found, return 404
-  if (!post) {
+  } catch (error) {
+    console.error('Error fetching editorial posts:', error);
     return c.html(html`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Not Found - MLSC Studio</title>
+          <title>Error - MLSC Studio</title>
           <style>
             body {
               font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -1258,299 +1111,413 @@ publicRoutes.get('/editorial/:slug', async (c) => {
           </style>
         </head>
         <body>
-          <h1>Editorial Post Not Found</h1>
-          <p>Sorry, we couldn't find the editorial post you're looking for.</p>
+          <h1>Editorial Error</h1>
+          <p>Sorry, there was an error fetching the editorial posts.</p>
           <p><a href="/editorial">Return to Editorial</a></p>
         </body>
       </html>
-    `, 404);
+    `, 500);
   }
+});
+
+// Editorial single post page
+publicRoutes.get('/editorial/:slug', async (c) => {
+  const { slug } = c.req.param();
   
-  // Format the date
-  const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  // Sort gallery images by priority if they exist
-  const galleryImages = post.galleryImages ? 
-    [...post.galleryImages].sort((a, b) => a.priority - b.priority) : 
-    [];
-  
-  return c.html(html`
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${post.title} - MLSC Studio</title>
-        <style>
-          /* Base styles */
-          body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          
-          /* Custom font definition */
-          @font-face {
-            font-family: 'MLSCNavigationFont';
-            src: url('/static/fonts/AkidoNoSymbols-Regular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-          }
-          
-          header {
-            margin-bottom: 40px;
-          }
-          
-          .back-link {
-            display: inline-flex;
-            align-items: center;
-            margin-bottom: 20px;
-            color: #555;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s ease;
-          }
-          
-          .back-link:hover {
-            color: #000;
-          }
-          
-          .back-link svg {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-          }
-          
-          .article-header {
-            margin-bottom: 30px;
-          }
-          
-          .article-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            line-height: 1.2;
-          }
-          
-          .article-meta {
-            color: #777;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-          }
-          
-          .article-featured-image {
-            width: 100%;
-            margin-bottom: 30px;
-          }
-          
-          .article-featured-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-          }
-          
-          /* Gallery grid styling */
-          .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            grid-gap: 20px;
-            margin: 40px 0;
-          }
-          
-          @media (min-width: 640px) {
-            .gallery-grid {
-              grid-template-columns: repeat(2, 1fr);
+  try {
+    // Fetch editorial post from Payload CMS API
+    const apiUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000';
+    const response = await fetch(`${apiUrl}/api/editorial?where[slug][equals]=${slug}&depth=1`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch editorial post: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    let post = data.docs && data.docs.length > 0 ? data.docs[0] : null;
+    
+    // Fallback to mock data if no post or error occurred
+    if (!post) {
+      console.log('Post not found from CMS or error occurred, checking mock data');
+      
+      // Define mock posts
+      const mockPosts: Record<string, any> = {
+        'artwork-1': {
+          id: '1',
+          title: 'Artwork 1',
+          slug: 'artwork-1',
+          author: 'MLSC',
+          publishedDate: new Date().toISOString(),
+          category: 'design-principles',
+          displayType: 'standard',
+          featuredImage: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Artwork 1',
+          },
+          summary: 'Example summary for mock post 1',
+          content: '<p>This is the mock content for the first artwork.</p>',
+          galleryImages: [
+            {
+              image: {
+                url: '/static/mlsc-logo.png',
+                alt: 'Gallery Image 1',
+              },
+              aspectRatio: 'landscape'
             }
-          }
-          
-          @media (min-width: 1024px) {
-            .gallery-grid {
-              grid-template-columns: repeat(3, 1fr);
+          ]
+        },
+        'artwork-2': {
+          id: '2',
+          title: 'Artwork 2',
+          slug: 'artwork-2',
+          author: 'MLSC',
+          publishedDate: new Date().toISOString(),
+          category: 'music-visual-art',
+          displayType: 'gallery',
+          featuredImage: {
+            url: '/static/mlsc-logo.png',
+            alt: 'Artwork 2',
+          },
+          summary: 'Example summary for mock post 2',
+          content: '<p>This is the mock content for the second artwork.</p>',
+          galleryImages: [
+            {
+              image: {
+                url: '/static/mlsc-logo.png',
+                alt: 'Gallery Image 2',
+              },
+              aspectRatio: 'portrait'
             }
-          }
-          
-          .gallery-item {
-            break-inside: avoid;
-            position: relative;
-          }
-          
-          .gallery-item img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.3s ease;
-          }
-          
-          .gallery-item:hover img {
-            transform: scale(1.02);
-          }
-          
-          .gallery-item.portrait {
-            grid-row: span 2;
-          }
-          
-          .gallery-item.landscape {
-            grid-column: span 1;
-          }
-          
-          .gallery-item.square {
-            aspect-ratio: 1/1;
-          }
-          
-          .gallery-item.wide {
-            grid-column: span 2;
-          }
-          
-          .gallery-item.full-width {
-            grid-column: 1 / -1;
-          }
-          
-          .caption {
-            margin-top: 8px;
-            font-size: 0.85rem;
-            color: #555;
-            font-style: italic;
-          }
-          
-          /* Article content styling */
-          .article-content {
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 1.1rem;
-            line-height: 1.7;
-          }
-          
-          .article-content p {
-            margin-bottom: 1.5rem;
-          }
-          
-          .article-content h2 {
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-          }
-          
-          .article-content h3 {
-            margin-top: 2rem;
-            margin-bottom: 0.8rem;
-            font-size: 1.5rem;
-          }
-          
-          .article-content a {
-            color: #333;
-            text-decoration: underline;
-            text-decoration-thickness: 1px;
-            text-underline-offset: 2px;
-          }
-          
-          .article-content a:hover {
-            text-decoration-thickness: 2px;
-          }
-          
-          .article-content ul, .article-content ol {
-            margin-bottom: 1.5rem;
-            padding-left: 1.5rem;
-          }
-          
-          .article-content li {
-            margin-bottom: 0.5rem;
-          }
-          
-          .article-content blockquote {
-            margin: 2rem 0;
-            padding: 1rem 1.5rem;
-            border-left: 4px solid #333;
-            background-color: #f8f8f8;
-            font-style: italic;
-          }
-          
-          .article-content blockquote p:last-child {
-            margin-bottom: 0;
-          }
-          
-          .article-content blockquote {
-            margin: 2rem 0;
-            padding: 1rem 1.5rem;
-            border-left: 4px solid #333;
-            background-color: #f8f8f8;
-            font-style: italic;
-          }
-          
-          .article-content blockquote p:last-child {
-            margin-bottom: 0;
-          }
-          
-          footer {
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #777;
-          }
-        </style>
-      </head>
-      <body>
-        ${isPreviewMode ? PreviewBanner() : ''}
-        <header>
-          <a href="/editorial" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Back to Editorial
-          </a>
-          
-          <div class="article-header">
-            <h1>${post.title}</h1>
-            <div class="article-meta">
-              <span>${formattedDate}</span>
-              <span>${post.author}</span>
-              <span>${post.category}</span>
-            </div>
-          </div>
-          
-          <div class="article-featured-image">
-            <img src="${post.featuredImage.url}" alt="${post.featuredImage.alt}" />
-            ${post.featuredImage.caption ? html`<div class="caption">${post.featuredImage.caption}</div>` : ''}
-          </div>
-        </header>
-        
-        <!-- Gallery grid for images -->
-        ${galleryImages.length > 0 ? html`
-          <div class="gallery-grid">
-            ${galleryImages.map(item => html`
-              <div class="gallery-item ${item.aspectRatio}">
-                <img src="${item.image.url}" alt="${item.image.alt}" loading="lazy" />
-                ${item.caption ? html`<div class="caption">${item.caption}</div>` : ''}
+          ]
+        }
+      };
+      
+      post = mockPosts[slug];
+      
+      // If not found in mock data either, return 404
+      if (!post) {
+        return c.notFound();
+      }
+    }
+    
+    // Get preview mode flag from query params
+    const isPreviewMode = c.req.query('preview') === 'true';
+    
+    // Format date for display
+    const date = new Date(post.publishedDate);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    return c.html(html`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${post.title} - MLSC Studio</title>
+          <style>
+            /* Base styles */
+            body {
+              font-family: 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 1200px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            
+            /* Custom font definition */
+            @font-face {
+              font-family: 'MLSCNavigationFont';
+              src: url('/static/fonts/AkidoNoSymbols-Regular.ttf') format('truetype');
+              font-weight: normal;
+              font-style: normal;
+              font-display: swap;
+            }
+            
+            header {
+              margin-bottom: 40px;
+            }
+            
+            .back-link {
+              display: inline-flex;
+              align-items: center;
+              margin-bottom: 20px;
+              color: #555;
+              text-decoration: none;
+              font-size: 14px;
+              transition: color 0.2s ease;
+            }
+            
+            .back-link:hover {
+              color: #000;
+            }
+            
+            .back-link svg {
+              width: 16px;
+              height: 16px;
+              margin-right: 8px;
+            }
+            
+            .article-header {
+              margin-bottom: 30px;
+            }
+            
+            .article-header h1 {
+              font-size: 2.5rem;
+              margin-bottom: 10px;
+              line-height: 1.2;
+            }
+            
+            .article-meta {
+              color: #777;
+              font-size: 0.9rem;
+              margin-bottom: 20px;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 15px;
+            }
+            
+            .article-featured-image {
+              width: 100%;
+              margin-bottom: 30px;
+            }
+            
+            .article-featured-image img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+            
+            /* Gallery grid styling */
+            .gallery-grid {
+              display: grid;
+              grid-template-columns: repeat(1, 1fr);
+              grid-gap: 20px;
+              margin: 40px 0;
+            }
+            
+            @media (min-width: 640px) {
+              .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+              }
+            }
+            
+            @media (min-width: 1024px) {
+              .gallery-grid {
+                grid-template-columns: repeat(3, 1fr);
+              }
+            }
+            
+            .gallery-item {
+              break-inside: avoid;
+              position: relative;
+            }
+            
+            .gallery-item img {
+              width: 100%;
+              height: auto;
+              display: block;
+              transition: transform 0.3s ease;
+            }
+            
+            .gallery-item:hover img {
+              transform: scale(1.02);
+            }
+            
+            .gallery-item.portrait {
+              grid-row: span 2;
+            }
+            
+            .gallery-item.landscape {
+              grid-column: span 1;
+            }
+            
+            .gallery-item.square {
+              aspect-ratio: 1/1;
+            }
+            
+            .gallery-item.wide {
+              grid-column: span 2;
+            }
+            
+            .gallery-item.full-width {
+              grid-column: 1 / -1;
+            }
+            
+            .caption {
+              margin-top: 8px;
+              font-size: 0.85rem;
+              color: #555;
+              font-style: italic;
+            }
+            
+            /* Article content styling */
+            .article-content {
+              max-width: 800px;
+              margin: 0 auto;
+              font-size: 1.1rem;
+              line-height: 1.7;
+            }
+            
+            .article-content p {
+              margin-bottom: 1.5rem;
+            }
+            
+            .article-content h2 {
+              margin-top: 2.5rem;
+              margin-bottom: 1rem;
+              font-size: 1.8rem;
+            }
+            
+            .article-content h3 {
+              margin-top: 2rem;
+              margin-bottom: 0.8rem;
+              font-size: 1.5rem;
+            }
+            
+            .article-content a {
+              color: #333;
+              text-decoration: underline;
+              text-decoration-thickness: 1px;
+              text-underline-offset: 2px;
+            }
+            
+            .article-content a:hover {
+              text-decoration-thickness: 2px;
+            }
+            
+            .article-content ul, .article-content ol {
+              margin-bottom: 1.5rem;
+              padding-left: 1.5rem;
+            }
+            
+            .article-content li {
+              margin-bottom: 0.5rem;
+            }
+            
+            .article-content blockquote {
+              margin: 2rem 0;
+              padding: 1rem 1.5rem;
+              border-left: 4px solid #333;
+              background-color: #f8f8f8;
+              font-style: italic;
+            }
+            
+            .article-content blockquote p:last-child {
+              margin-bottom: 0;
+            }
+            
+            .article-content blockquote {
+              margin: 2rem 0;
+              padding: 1rem 1.5rem;
+              border-left: 4px solid #333;
+              background-color: #f8f8f8;
+              font-style: italic;
+            }
+            
+            .article-content blockquote p:last-child {
+              margin-bottom: 0;
+            }
+            
+            footer {
+              margin-top: 60px;
+              padding-top: 20px;
+              border-top: 1px solid #eee;
+              text-align: center;
+              font-size: 0.9rem;
+              color: #777;
+            }
+          </style>
+        </head>
+        <body>
+          ${isPreviewMode ? PreviewBanner() : ''}
+          <header>
+            <a href="/editorial" class="back-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Back to Editorial
+            </a>
+            
+            <div class="article-header">
+              <h1>${post.title}</h1>
+              <div class="article-meta">
+                <span>${formattedDate}</span>
+                <span>${post.author}</span>
+                <span>${post.category}</span>
               </div>
-            `).join('')}
-          </div>
-        ` : ''}
-        
-        <!-- Article content for 'article' type posts -->
-        ${post.displayType === 'article' && post.content ? html`
-          <div class="article-content">
-            <!-- This would typically use a rich text renderer -->
-            ${typeof post.content === 'string' ? post.content : JSON.stringify(post.content)}
-          </div>
-        ` : ''}
-        
-        <footer>
-          <p>&copy; ${new Date().getFullYear()} MLSC Studio. All rights reserved.</p>
-        </footer>
-      </body>
-    </html>
-  `);
+            </div>
+            
+            <div class="article-featured-image">
+              <img src="${post.featuredImage.url}" alt="${post.featuredImage.alt}" />
+              ${post.featuredImage.caption ? html`<div class="caption">${post.featuredImage.caption}</div>` : ''}
+            </div>
+          </header>
+          
+          <!-- Gallery grid for images -->
+          ${post.galleryImages && post.galleryImages.length > 0 ? html`
+            <div class="gallery-grid">
+              ${post.galleryImages.map(item => html`
+                <div class="gallery-item ${item.aspectRatio}">
+                  <img src="${item.image.url}" alt="${item.image.alt}" loading="lazy" />
+                  ${item.caption ? html`<div class="caption">${item.caption}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          <!-- Article content for 'article' type posts -->
+          ${post.displayType === 'article' && post.content ? html`
+            <div class="article-content">
+              <!-- This would typically use a rich text renderer -->
+              ${typeof post.content === 'string' ? post.content : JSON.stringify(post.content)}
+            </div>
+          ` : ''}
+          
+          <footer>
+            <p>&copy; ${new Date().getFullYear()} MLSC Studio. All rights reserved.</p>
+          </footer>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('Error fetching editorial post:', error);
+    return c.html(html`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Error - MLSC Studio</title>
+          <style>
+            body {
+              font-family: 'Helvetica Neue', Arial, sans-serif;
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 40px 20px;
+              text-align: center;
+            }
+            h1 {
+              font-size: 2rem;
+            }
+            a {
+              color: #333;
+              text-decoration: none;
+              border-bottom: 1px solid #333;
+              padding-bottom: 2px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Editorial Error</h1>
+          <p>Sorry, there was an error fetching the editorial post.</p>
+          <p><a href="/editorial">Return to Editorial</a></p>
+        </body>
+      </html>
+    `, 500);
+  }
 });
 
 // Shop page
